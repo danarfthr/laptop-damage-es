@@ -5,7 +5,7 @@ SYMPTOM_LABELS = {
     "lampu_indikator_menyala": "Lampu indikator daya menyala (ada tanda daya masuk)",
     "tidak_ada_suara": "Tidak ada suara apapun saat tombol power ditekan",
     "ada_suara_kipas": "Terdengar suara kipas berputar setelah dinyalakan",
-    "laptop_menyala": "Laptop menyala (ada aktivitas, fan berputar, suara startup)",
+    "laptop_menyala": "Laptop menyala (ada aktivitas, kipas berputar, suara startup)",
     "layar_hitam": "Layar tetap hitam setelah laptop dinyalakan",
     "laptop_lambat": "Laptop sangat lambat saat digunakan",
     "sering_hang": "Laptop sering mengalami hang / not responding",
@@ -44,7 +44,7 @@ RULES = [
     },
     {
         "id": "R03",
-        "conditions": ["laptop_menyala", "layar_hitam", "ada_suara_fan"],
+        "conditions": ["laptop_menyala", "layar_hitam", "ada_suara_kipas"],
         "cause": "Kerusakan RAM atau RAM tidak terpasang dengan benar",
         "solution": "Lepas dan pasang kembali RAM. Coba dengan satu keping RAM bergantian. Ganti RAM jika perlu.",
         "cf_he": 0.8,
@@ -66,8 +66,8 @@ RULES = [
     {
         "id": "R06",
         "conditions": ["laptop_panas_berlebih", "sering_mati_sendiri"],
-        "cause": "Sistem pendingin bermasalah — fan tersumbat debu atau thermal paste kering",
-        "solution": "Bersihkan heatsink dan fan dari debu. Ganti thermal paste pada prosesor dan GPU.",
+        "cause": "Sistem pendingin bermasalah — kipas tersumbat debu atau thermal paste kering",
+        "solution": "Bersihkan heatsink dan kipas dari debu. Ganti thermal paste pada prosesor dan GPU.",
         "cf_he": 0.88,
     },
     {
@@ -120,7 +120,7 @@ WHY_NOTES = {
     "lampu_indikator_mati": "Jika indikator mati, berarti tidak ada daya sama sekali masuk ke sistem — menunjuk ke adaptor atau baterai.",
     "lampu_indikator_menyala": "Jika indikator menyala tapi layar hitam, berarti daya ada tetapi output display bermasalah.",
     "tidak_ada_suara": "Tidak ada suara berarti tidak ada proses booting — komponen daya kemungkinan gagal total.",
-    "ada_suara_fan": "Suara fan membuktikan laptop mendapat daya dan CPU aktif — masalah ada di display atau RAM, bukan daya.",
+    "ada_suara_kipas": "Suara kipas membuktikan laptop mendapat daya dan CPU aktif — masalah ada di display atau RAM, bukan daya.",
     "laptop_menyala": "Konfirmasi bahwa sistem daya bekerja — penyebab kerusakan ada di komponen lain.",
     "layar_hitam": "Layar hitam dengan tanda daya aktif biasanya menunjukkan masalah RAM (gagal POST) atau display.",
     "laptop_lambat": "Kelambatan sistemik biasanya berasal dari storage atau RAM, bukan CPU.",
