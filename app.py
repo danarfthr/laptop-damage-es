@@ -1,96 +1,101 @@
-# app.py
 import streamlit as st
 from knowledge_base import RULES, ALL_SYMPTOMS, SYMPTOM_LABELS, WHY_NOTES
 from inference import forward_chain
-from explanation import how_explanation, why_explanation
+from explanation import how_explanation
 
-st.set_page_config(page_title="Sistem Pakar Diagnosis Laptop", layout="wide")
-
-st.title("Sistem Pakar Diagnosis Kerusakan Laptop")
-st.caption(
-    "Pilih gejala yang dialami laptop Anda dan tingkat keyakinan Anda terhadap setiap gejala. "
-    "Sistem akan mendiagnosa penyebab kerusakan menggunakan Forward Chaining dan Certainty Factor."
+st.set_page_config(
+    page_title="Sistem Pakar Diagnosis Laptop",
+    page_icon="💻",
+    layout="centered",
 )
 
-st.markdown("---")
+st.title("💻 Diagnosis Kerusakan Laptop")
+st.caption("Sistem Pakar berbasis Forward Chaining & Certainty Factor")
 
-# --- SYMPTOM INPUT WITH CF(E,e) ---
-st.subheader("Masukkan Gejala")
-st.markdown(
-    "Untuk setiap gejala yang **terlihat pada laptop Anda**, pilih tingkat keyakinan Anda. "
-    "Gejala yang tidak dialami tidak perlu diisi."
-)
+st.divider()
 
-CF_OPTIONS = {
-    "Yakin sekali (pasti terjadi)": 1.0,
-    "Cukup yakin (kemungkinan besar terjadi)": 0.6,
-    "Kurang yakin (mungkin terjadi)": 0.3,
-    "Tidak dialami / tidak tahu": 0.0,
+# --- STEP 1: PILIH GEJALA ---
+st.subheader("Langkah 1 — Pilih gejala yang dialami")
+st.info("Centang semua gejala yang relevan, lalu atur tingkat keyakinan Anda di bawahnya.")
+
+CF_LEVELS = {
+    "Tidak dialami": 0.0,
+    "Kurang yakin": 0.3,
+    "Cukup yakin": 0.6,
+    "Yakin sekali": 1.0,
 }
 
+selected_symptoms = []
+for symptom in ALL_SYMPTOMS:
+    label = SYMPTOM_LABELS.get(symptom, symptom)
+    checked = st.checkbox(label, key=f"check_{symptom}")
+    if checked:
+        selected_symptoms.append(symptom)
+
+st.divider()
+
+# --- STEP 2: ATUR TINGKAT KEYAKINAN ---
 symptom_cf_map = {}
 
-col1, col2 = st.columns(2)
-for i, symptom in enumerate(ALL_SYMPTOMS):
-    label = SYMPTOM_LABELS.get(symptom, symptom)
-    why = why_explanation(symptom, WHY_NOTES)
+if selected_symptoms:
+    st.subheader("Langkah 2 — Seberapa yakin Anda dengan gejala tersebut?")
 
-    col = col1 if i % 2 == 0 else col2
-    with col:
-        with st.expander(f"{label}", expanded=False):
-            st.caption(f"**Mengapa ditanyakan?** {why}")
-            selection = st.selectbox(
-                "Tingkat keyakinan:",
-                options=list(CF_OPTIONS.keys()),
-                index=3,  # default: "Tidak dialami"
-                key=f"select_{symptom}"
-            )
-            cf_val = CF_OPTIONS[selection]
-            if cf_val > 0.0:
-                symptom_cf_map[symptom] = cf_val
+    for symptom in selected_symptoms:
+        label = SYMPTOM_LABELS.get(symptom, symptom)
+        why = WHY_NOTES.get(symptom, "")
+        level = st.select_slider(
+            label,
+            options=list(CF_LEVELS.keys()),
+            value="Cukup yakin",
+            key=f"cf_{symptom}",
+            help=why,
+        )
+        cf_val = CF_LEVELS[level]
+        if cf_val > 0.0:
+            symptom_cf_map[symptom] = cf_val
 
-st.markdown("---")
+    st.divider()
 
-# --- DIAGNOSA ---
-if st.button("Diagnosa Sekarang", type="primary", use_container_width=True):
-    if not symptom_cf_map:
-        st.warning("Pilih minimal satu gejala dengan tingkat keyakinan di atas 'Tidak dialami / tidak tahu'.")
+# --- STEP 3: DIAGNOSA ---
+st.subheader("Langkah 3 — Diagnosa")
+
+diagnose_btn = st.button(
+    "Mulai Diagnosa",
+    type="primary",
+    disabled=len(symptom_cf_map) == 0,
+    use_container_width=True,
+)
+
+if diagnose_btn:
+    results = forward_chain(symptom_cf_map, RULES)
+
+    if not results:
+        st.warning(
+            "Tidak ada aturan yang cocok dengan gejala ini. "
+            "Coba tambahkan lebih banyak gejala, atau konsultasikan langsung ke teknisi."
+        )
     else:
-        results = forward_chain(symptom_cf_map, RULES)
+        st.success(f"Ditemukan **{len(results)}** kemungkinan diagnosis.")
+        st.caption("Diurutkan dari Certainty Factor tertinggi ke terendah.")
+        st.divider()
 
-        if not results:
-            st.error(
-                "Tidak ada aturan yang cocok dengan kombinasi gejala ini (atau CF hasil terlalu rendah). "
-                "Silakan konsultasikan langsung ke teknisi laptop."
-            )
-        else:
-            st.success(f"Ditemukan **{len(results)}** kemungkinan diagnosis, diurutkan berdasarkan Certainty Factor tertinggi.")
-            st.markdown("")
+        for i, result in enumerate(results, 1):
+            rule = result["rule"]
+            cf = result["result_cf"]
 
-            for i, result in enumerate(results, 1):
-                rule = result["rule"]
-                cf = result["result_cf"]
+            if cf >= 0.7:
+                badge = "🟢 Keyakinan Tinggi"
+            elif cf >= 0.4:
+                badge = "🟡 Keyakinan Sedang"
+            else:
+                badge = "🔴 Keyakinan Rendah"
 
-                # CF color coding
-                if cf >= 0.7:
-                    cf_label = "Tinggi"
-                    cf_color = "green"
-                elif cf >= 0.4:
-                    cf_label = "Sedang"
-                    cf_color = "orange"
-                else:
-                    cf_label = "Rendah"
-                    cf_color = "red"
+            st.markdown(f"#### Diagnosis {i} — {badge} (CF = {cf:.2f})")
+            st.markdown(f"**Penyebab:** {rule['cause']}")
+            st.markdown(f"**Solusi:** {rule['solution']}")
 
-                with st.expander(
-                    f"Diagnosis {i}: {rule['cause']}  |  CF = {cf:.2f} ({cf_label})",
-                    expanded=(i == 1)
-                ):
-                    st.markdown(f"**Solusi yang Direkomendasikan:**")
-                    st.info(rule["solution"])
+            with st.expander("Lihat penjelasan HOW (bagaimana sistem menyimpulkan ini)"):
+                st.markdown(how_explanation(result, SYMPTOM_LABELS))
 
-                    st.markdown("---")
-
-                    # HOW Explanation
-                    how = how_explanation(result, SYMPTOM_LABELS)
-                    st.markdown(how)
+            if i < len(results):
+                st.divider()
