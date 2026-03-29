@@ -1,4 +1,4 @@
-from certainty import cf_and, cf_rule, cf_combined
+from certainty import cf_and, cf_rule, cf_combine
 
 def forward_chain(symptom_cf_map: dict[str, float], rules: list[dict]) -> list[dict]:
     """
