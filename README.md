@@ -25,7 +25,7 @@ Setelah itu buka browser dan akses `http://localhost:8501`.
 ## Struktur File
 
 ```
-sistem_pakar_laptop/
+laptop-damage-es/
 ├── app.py               # tampilan utama (UI)
 ├── knowledge_base.py    # kumpulan aturan IF-THEN
 ├── inference.py         # mesin inferensi forward chaining
@@ -42,3 +42,9 @@ sistem_pakar_laptop/
 - Python 3.x
 - Streamlit
 
+## Anggota Kelompok
+- Kenji Ratanaputra (24/534421/PA/22664)
+- Danar Fathurahman (24/538200/PA/22828)
+- Melinda Annastasia Budijono (24/542840/PA/23052)
+- Ayasha Rahmadinni (24/545462/PA/23178)
+- Widad Muhammad Rafi (24/545635/PA/23190)
