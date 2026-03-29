@@ -141,3 +141,5 @@ WHY_NOTES = {
     "bsod": "BSOD memberikan error code yang spesifik — hampir selalu terkait driver, RAM, atau OS corruption.",
     "touchpad_tidak_merespons": "Touchpad mati bisa sesederhana Fn lock atau serius seperti konektor rusak.",
 }
+
+ALL_SYMPTOMS = sorted(set(s for rule in RULES for s in rule["conditions"]))
